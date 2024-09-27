@@ -243,10 +243,12 @@ class KiaUvoApiEU(ApiImplType1):
 
     def login(self, username: str, password: str) -> Token:
         session = requests.Session()
-        session.headers.update({
-            "User-Agent": USER_AGENT_MOZILLA,
-            "Accept-Language": "en-GB,en;q=0.9",
-        })
+        session.headers.update(
+            {
+                "User-Agent": USER_AGENT_MOZILLA,
+                "Accept-Language": "en-GB,en;q=0.9",
+            }
+        )
 
         # Step 1: GET oauth2 - sets initial cookie
         url = f"https://{self.BASE_DOMAIN}/api/v1/user/oauth2/authorize?response_type=code&client_id={self.CCSP_SERVICE_ID}&redirect_uri=https://{self.LOGIN_FORM_HOST}/realms/eugenesisidm/ga-api/redirect2&lang=en&scope=url.newapp"
@@ -290,10 +292,7 @@ class KiaUvoApiEU(ApiImplType1):
         login_action_url = match.group(1)
 
         # Step 7: Submit username and password to login
-        payload = {
-            "username": username,
-            "password": password
-        }
+        payload = {"username": username, "password": password}
         response = session.post(login_action_url, data=payload, allow_redirects=False)
         if response.status_code != 302:
             raise AuthenticationError("Login failed")
@@ -314,17 +313,17 @@ class KiaUvoApiEU(ApiImplType1):
         redirect_url_with_code = response.json().get("redirectUrl")
 
         # Step 10: Fetch the access token using the authorization code
-        session_code = re.search(r'code=([^&]*)', redirect_url_with_code).group(1)
+        session_code = re.search(r"code=([^&]*)", redirect_url_with_code).group(1)
         url = f"https://{self.BASE_DOMAIN}/api/v1/user/oauth2/token"
         payload = {
             "client_id": self.CCSP_SERVICE_ID,
             "code": session_code,
             "grant_type": "authorization_code",
-            "redirect_uri": f"https://{self.LOGIN_FORM_HOST}/realms/eugenesisidm/ga-api/redirect2"
+            "redirect_uri": f"https://{self.LOGIN_FORM_HOST}/realms/eugenesisidm/ga-api/redirect2",
         }
         headers = {
             "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
-            "Authorization": self.BASIC_AUTHORIZATION
+            "Authorization": self.BASIC_AUTHORIZATION,
         }
         response = session.post(url, headers=headers, data=payload)
         if response.status_code != 200:
